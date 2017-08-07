@@ -5,7 +5,7 @@
 WITH TOPTHOUSAND as (
         --The following table creates a pivot which outputs the estimated ranking of an app_id in a given country's rank list.
         --By creating an averaged rank value and having SQL Server apply a hierarchical numeration, we can label any sized 'top' list. 
-        --To calculate GP or iOS we must comment in/out two WHERE clauses on lines 25/26 and 34.
+        --To calculate GP or iOS we must comment in/out two WHERE clauses on lines 26/27 and 35.
         --Google Play creates daily rank lists of 540. iOS App Store has a list of 1500.
         SELECT app_id, app_kind
         ,row_number() over (partition by app_kind order by case when BR is null then 99999 else br end asc) as rank_BR
