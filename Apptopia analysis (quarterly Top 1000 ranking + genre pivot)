@@ -106,7 +106,7 @@ INFORMATION as (
         where rn = 1
 )
 
-SELECT 
+SELECT distinct
 TOPTHOUSAND.app_id
 ,APP_SDK.app_name
 ,INFORMATION.publisher_name
