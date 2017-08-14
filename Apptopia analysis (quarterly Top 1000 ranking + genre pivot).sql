@@ -30,6 +30,9 @@ WITH TOPTHOUSAND as (
                         SELECT app_country, count(distinct app_date) as days_in_quarter
                         from dw_stage.apptopia.rank_lists
                         where app_date >= '2017-04-01' and app_date < '2017-07-01' --dates delimiting a quarter
+			AND [app_store_id] in ('google_play'/*'itunes_connect'*/)
+			AND app_category_id in ('38','6014')  
+			AND app_kind in ('grossing', 'free') 
                         group by app_country
             ) day_count on rank_table.app_country = day_count.app_country
             where rank_table.app_store_id in ('google_play'/*'itunes_connect'*/)
