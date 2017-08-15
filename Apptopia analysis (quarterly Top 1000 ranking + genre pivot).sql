@@ -9,18 +9,18 @@ WITH TOPTHOUSAND as (
         --Google Play creates daily rank lists of 540. iOS App Store has a list of 1500.
         SELECT app_id, app_kind
         ,row_number() over (partition by app_kind order by case when BR is null then 99999 else br end asc) as rank_BR
-        ,row_number() over (partition by app_kind order by case when CA is null then 99999 else br end asc) as rank_CA
-        ,row_number() over (partition by app_kind order by case when CN is null then 99999 else br end asc) as rank_CN
-        ,row_number() over (partition by app_kind order by case when DE is null then 99999 else br end asc) as rank_DE
-        ,row_number() over (partition by app_kind order by case when FI is null then 99999 else br end asc) as rank_FI
-        ,row_number() over (partition by app_kind order by case when FR is null then 99999 else br end asc) as rank_FR
-        ,row_number() over (partition by app_kind order by case when GB is null then 99999 else br end asc) as rank_GB
-        ,row_number() over (partition by app_kind order by case when JP is null then 99999 else br end asc) as rank_JP
-        ,row_number() over (partition by app_kind order by case when KR is null then 99999 else br end asc) as rank_KR
-        ,row_number() over (partition by app_kind order by case when MX is null then 99999 else br end asc) as rank_MX
-        ,row_number() over (partition by app_kind order by case when RU is null then 99999 else br end asc) as rank_RU
-        ,row_number() over (partition by app_kind order by case when SE is null then 99999 else br end asc) as rank_SE
-        ,row_number() over (partition by app_kind order by case when US is null then 99999 else br end asc) as rank_US
+        ,row_number() over (partition by app_kind order by case when CA is null then 99999 else ca end asc) as rank_CA
+        ,row_number() over (partition by app_kind order by case when CN is null then 99999 else cn end asc) as rank_CN
+        ,row_number() over (partition by app_kind order by case when DE is null then 99999 else de end asc) as rank_DE
+        ,row_number() over (partition by app_kind order by case when FI is null then 99999 else fi end asc) as rank_FI
+        ,row_number() over (partition by app_kind order by case when FR is null then 99999 else fr end asc) as rank_FR
+        ,row_number() over (partition by app_kind order by case when GB is null then 99999 else gb end asc) as rank_GB
+        ,row_number() over (partition by app_kind order by case when JP is null then 99999 else jp end asc) as rank_JP
+        ,row_number() over (partition by app_kind order by case when KR is null then 99999 else kr end asc) as rank_KR
+        ,row_number() over (partition by app_kind order by case when MX is null then 99999 else mx end asc) as rank_MX
+        ,row_number() over (partition by app_kind order by case when RU is null then 99999 else ru end asc) as rank_RU
+        ,row_number() over (partition by app_kind order by case when SE is null then 99999 else se end asc) as rank_SE
+        ,row_number() over (partition by app_kind order by case when US is null then 99999 else us end asc) as rank_US
         from (
                 SELECT rank_table.app_country, rank_table.app_id, rank_table.app_store_id, app_kind, 
                 ((max(days_in_quarter) - count(app_rank)) * 541 + sum(app_rank)) / max(days_in_quarter) as app_rank --Google Play
