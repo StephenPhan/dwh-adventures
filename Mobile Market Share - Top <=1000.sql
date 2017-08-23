@@ -52,8 +52,7 @@ WITH TOPTHOUSAND as (
 
 APP_SDK as (
         --The following table is used to ID engine SDKs for all ranked apps and those without any SDK recognition.
-        SELECT distinct app_name, app_id, app_store_id
-        ,case when sdk_id is not null then 'found' else 'missing' end as missingSDK
+        SELECT DISTINCT /*app_name,*/app_id, app_store_id
         ,case when unity is null then 0 else 1 end as unity
         ,case when [Unreal Engine] is null then 0 else 1 end as unreal
         ,case when cocos2d is null then 0 else 1 end coco
@@ -62,60 +61,62 @@ APP_SDK as (
         ,case when [Corona Labs] is null then 0 else 1 end as corona_labs
         ,case when Xamarin is null then 0 else 1 end as xamarin
         from (
-                SELECT app_table.app_name, app_table.app_id, app_table.app_store_id, sdk_table.sdk_id, sdk_name, sdk_present
+                SELECT DISTINCT /*app_table.app_name,*/ app_table.app_id, app_table.app_store_id, sdk_table.sdk_id, sdk_name, sdk_present
                 from dw_stage.apptopia.app as app_table
-                left join dw_stage.apptopia.app_sdks as sdk_table on app_table.app_id = sdk_table.app_id
+                join dw_stage.apptopia.app_sdks as sdk_table on app_table.app_id = sdk_table.app_id
 				join dw_stage.apptopia.sdk as sdk_string on sdk_table.sdk_id = sdk_string.sdk_id
                 where category_id in ('38', '6014')
                 and app_table.app_store_id in ('google_play', 'itunes_connect')
+				and sdk_string.sdk_name in ('Unity', 'Unreal Engine', 'Cocos2D', 'Marmalade', 'Corona', 'Corona Labs', 'Xamarin')
                 and sdk_present = 1
         ) as sourcetable2
         PIVOT(
                 max(sdk_present) for sdk_name in (Unity, [Unreal Engine], Cocos2D, Marmalade, Corona, [Corona Labs], Xamarin)
         ) as pivottable2
 )
---,
+,
 
---INFORMATION as (
---        --The following table is used to determine the price of an app and its publisher.
---        SELECT distinct app_id, app_store_id, price, publisher_name
---        ,genreAction = (case when subcategory_id in (90, 7001) then 1 else 0 end)
---        ,genreAdventure = (case when subcategory_id in (89, 7002) then 1 else 0 end)
---        ,genreArcade = (case when subcategory_id in (84, 7003) then 1 else 0 end) 
---        ,genreBoard = (case when subcategory_id in (92, 7004) then 1 else 0 end) 
---        ,genreCard = (case when subcategory_id in (83, 7005) then 1 else 0 end) 
---        ,genreCasino = (case when subcategory_id in (86, 7006) then 1 else 0 end) 
---        ,genreCasual = (case when subcategory_id in (4) then 1 else 0 end) 
---        ,genreDice = (case when subcategory_id in (7007) then 1 else 0 end) 
---        ,genreEducational = (case when subcategory_id in (95, 7008) then 1 else 0 end) 
---        ,genreFamily = (case when subcategory_id in (88, 7009) then 1 else 0 end) 
---        ,genreLiveWallpaper = (case when subcategory_id in (40) then 1 else 0 end) 
---        ,genreMusic = (case when subcategory_id in (94, 7011) then 1 else 0 end) 
---        ,genrePuzzle = (case when subcategory_id in (85, 7012) then 1 else 0 end) 
---        ,genreRacing = (case when subcategory_id in (6, 7013) then 1 else 0 end) 
---        ,genreRolePlaying = (case when subcategory_id in (97, 7014) then 1 else 0 end) 
---        ,genreSimulation = (case when subcategory_id in (93, 7015) then 1 else 0 end) 
---        ,genreSports = (case when subcategory_id in (7, 7016) then 1 else 0 end) 
---        ,genreStrategy = (case when subcategory_id in (96, 7017) then 1 else 0 end) 
---        ,genreTrivia = (case when subcategory_id in (91, 7018) then 1 else 0 end) 
---        ,genreWidgets = (case when subcategory_id in (41) then 1 else 0 end) 
---        ,genreWord = (case when subcategory_id in (87, 7019) then 1 else 0 end) 
---        from(
---                SELECT distinct a.app_id, a.category_id, a.app_store_id, a.publisher_id, p.publisher_name, a.subcategory_id
---                , row_number() over(partition by app_id order by a.dwloaddate desc) as rn
---                , case when app_price_cents = 0 then 'free' else 'paid' end as price
---                from dw_stage.apptopia.app as a
---                left join dw_stage.apptopia.publisher as p on a.publisher_id = p.publisher_id
---        ) as pub
---        where rn = 1
---)
+INFORMATION as (
+        --The following table is used to determine the price of an app and its publisher.
+        SELECT distinct app_id, app_store_id, price, publisher_name
+        --,genreAction = (case when subcategory_id in (90, 7001) then 1 else 0 end)
+        --,genreAdventure = (case when subcategory_id in (89, 7002) then 1 else 0 end)
+        --,genreArcade = (case when subcategory_id in (84, 7003) then 1 else 0 end) 
+        --,genreBoard = (case when subcategory_id in (92, 7004) then 1 else 0 end) 
+        --,genreCard = (case when subcategory_id in (83, 7005) then 1 else 0 end) 
+        --,genreCasino = (case when subcategory_id in (86, 7006) then 1 else 0 end) 
+        --,genreCasual = (case when subcategory_id in (4) then 1 else 0 end) 
+        --,genreDice = (case when subcategory_id in (7007) then 1 else 0 end) 
+        --,genreEducational = (case when subcategory_id in (95, 7008) then 1 else 0 end) 
+        --,genreFamily = (case when subcategory_id in (88, 7009) then 1 else 0 end) 
+        --,genreLiveWallpaper = (case when subcategory_id in (40) then 1 else 0 end) 
+        --,genreMusic = (case when subcategory_id in (94, 7011) then 1 else 0 end) 
+        --,genrePuzzle = (case when subcategory_id in (85, 7012) then 1 else 0 end) 
+        --,genreRacing = (case when subcategory_id in (6, 7013) then 1 else 0 end) 
+        --,genreRolePlaying = (case when subcategory_id in (97, 7014) then 1 else 0 end) 
+        --,genreSimulation = (case when subcategory_id in (93, 7015) then 1 else 0 end) 
+        --,genreSports = (case when subcategory_id in (7, 7016) then 1 else 0 end) 
+        --,genreStrategy = (case when subcategory_id in (96, 7017) then 1 else 0 end) 
+        --,genreTrivia = (case when subcategory_id in (91, 7018) then 1 else 0 end) 
+        --,genreWidgets = (case when subcategory_id in (41) then 1 else 0 end) 
+        --,genreWord = (case when subcategory_id in (87, 7019) then 1 else 0 end) 
+        from(
+                SELECT distinct a.app_id, a.category_id, a.app_store_id, a.publisher_id, p.publisher_name, a.subcategory_id
+                , row_number() over(partition by app_id order by a.dwloaddate desc) as rn
+                , case when app_price_cents = 0 then 'free' else 'paid' end as price
+                from dw_stage.apptopia.app as a
+                left join dw_stage.apptopia.publisher as p on a.publisher_id = p.publisher_id
+        ) as pub
+        where rn = 1
+)
 
 SELECT distinct
 TOPTHOUSAND.app_id
---,INFORMATION.publisher_name
+--,APP_SDK.app_name
+,INFORMATION.publisher_name
 --,INFORMATION.app_store_id
 ,TOPTHOUSAND.app_kind as [ranking category]
---,INFORMATION.price
+,INFORMATION.price
 --,INFORMATION.genreAction
 --,INFORMATION.genreAdventure
 --,INFORMATION.genreArcade
@@ -151,10 +152,18 @@ TOPTHOUSAND.app_id
 ,TOPTHOUSAND.rank_RU
 ,TOPTHOUSAND.rank_SE
 ,TOPTHOUSAND.rank_US
-,APP_SDK.*
+, case when sdk_table.app_id is not null then 'found' else 'missing' end as missingSDK
+,APP_SDK.unity
+,APP_SDK.unreal
+,APP_SDK.coco
+,APP_SDK.marmalade
+,APP_SDK.corona
+,APP_SDK.corona_labs
+,APP_SDK.xamarin
 from TOPTHOUSAND
 left join APP_SDK on TOPTHOUSAND.app_id = APP_SDK.app_id
---left join INFORMATION on TOPTHOUSAND.app_id = INFORMATION.app_id
+left join INFORMATION on TOPTHOUSAND.app_id = INFORMATION.app_id
+left join (select distinct app_id from dw_stage.apptopia.app_sdks) as sdk_table on TOPTHOUSAND.app_id = sdk_table.app_id
 where (rank_BR<1001
 OR rank_CA<1001
 OR rank_CN<1001
