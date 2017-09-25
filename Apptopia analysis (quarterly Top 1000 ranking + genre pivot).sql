@@ -24,23 +24,23 @@ WITH TOPTHOUSAND as (
         ,row_number() over (partition by app_kind order by case when US is null then 99999 else us end asc) as rank_US
         from (
                 SELECT rank_table.app_country, rank_table.app_id, rank_table.app_store_id, app_kind, 
-                --((max(days_in_quarter) - count(app_rank)) * 541 + sum(app_rank)) / max(days_in_quarter) as app_rank --Google Play
-                ((max(days_in_quarter) - count(app_rank)) * 1501 + sum(app_rank)) / max(days_in_quarter) as app_rank --iTunes
+                ((max(days_in_quarter) - count(app_rank)) * 541 + sum(app_rank)) / max(days_in_quarter) as app_rank --Google Play
+                --((max(days_in_quarter) - count(app_rank)) * 1501 + sum(app_rank)) / max(days_in_quarter) as app_rank --iTunes
                 from dw_stage.apptopia.rank_lists as rank_table
                 join (
                         SELECT app_country, count(distinct app_date) as days_in_quarter
                         from dw_stage.apptopia.rank_lists
-                        where app_date >= '2017-04-01' and app_date < '2017-07-01' --dates delimiting a quarter
-			--AND [app_store_id] in ('google_play')
-			AND [app_store_id] in ('itunes_connect')
+                        where app_date >= '2017-07-01' and app_date < '2017-10-01' --dates delimiting a quarter
+			AND [app_store_id] in ('google_play')
+			--AND [app_store_id] in ('itunes_connect')
 			AND app_category_id in ('38','6014')  
 			AND app_kind in ('grossing', 'free') 
                         group by app_country
             ) day_count on rank_table.app_country = day_count.app_country
-            where --rank_table.app_store_id in ('google_play') AND 
-			rank_table.app_store_id in ('itunes_connect')
+            where rank_table.app_store_id in ('google_play')  
+			--rank_table.app_store_id in ('itunes_connect')
             and app_category_id in ('38', '6014')
-            and app_date >= '2017-04-01' and app_date < '2017-07-01'
+            and app_date >= '2017-07-01' and app_date < '2017-10-01'
             and app_kind in ('grossing', 'free')
             and rank_table.app_country in ('BR','CA','CN','DE','FI','FR','GB','JP','KR','MX','RU','SE','US')
             group by rank_table.app_country, rank_table.app_id, app_store_id, app_kind
