@@ -24,7 +24,7 @@ WITH TOPTHOUSAND as (
         ,row_number() over (partition by app_kind order by case when US is null then 99999 else us end asc) as rank_US
         from (
                 SELECT rank_table.app_country, rank_table.app_id, rank_table.app_store_id, app_kind, 
-                --(max(days_in_quarter) - count(app_rank)) * 541 + sum(app_rank)) / max(days_in_quarter) as app_rank --Google Play
+                --((max(days_in_quarter) - count(app_rank)) * 541 + sum(app_rank)) / max(days_in_quarter) as app_rank --Google Play
                 ((max(days_in_quarter) - count(app_rank)) * 1501 + sum(app_rank)) / max(days_in_quarter) as app_rank --iTunes
                 from dw_stage.apptopia.rank_lists as rank_table
                 join (
