@@ -65,8 +65,8 @@ APP_SDK as (
         from (
                 SELECT DISTINCT /*app_table.app_name,*/ app_table.app_id, app_table.app_store_id, sdk_table.sdk_id, sdk_name, sdk_present
                 from dw_stage.apptopia.app as app_table
-                join dw_stage.apptopia.app_sdks as sdk_table on app_table.app_id = sdk_table.app_id
-				join dw_stage.apptopia.sdk as sdk_string on sdk_table.sdk_id = sdk_string.sdk_id
+                left join dw_stage.apptopia.app_sdks as sdk_table on app_table.app_id = sdk_table.app_id
+				left join dw_stage.apptopia.sdk as sdk_string on sdk_table.sdk_id = sdk_string.sdk_id
                 where category_id in ('38', '6014')
                 and app_table.app_store_id in ('google_play', 'itunes_connect')
 				and sdk_string.sdk_name in ('Unity', 'Unreal Engine', 'Cocos2D', 'Marmalade', 'Corona', 'Corona Labs', 'Xamarin')
