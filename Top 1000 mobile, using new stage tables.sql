@@ -2,7 +2,7 @@
 
 -------------------
 --UPDATED AS OF:
---2017-10-10
+--2017-11-14
 -------------------
 
 -- Part 1 creates the Top Thousand global table with all pertinent app_ids for either google_play or itunes_connect
@@ -84,6 +84,7 @@ from
     (
         select md.app_id, app_name, app_publisher_name, app_sdk_name,'1' as sdk_present, app_price_cents from dw_stage.apptopia.app_metadata md
         right join ##____top1k____ tt on md.app_id = tt.app_id
+        where app_store_id = 'google_play' --to avoid using CN Android stores
     ) as sourcetable2
 PIVOT(
     max(sdk_present) for app_sdk_name in (Unity, [Unreal Engine], Cocos2D, Marmalade, Corona, [Corona Labs], Xamarin)
