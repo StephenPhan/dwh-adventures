@@ -2,7 +2,7 @@
 
 -------------------
 --UPDATED AS OF:
---2017-11-14
+--2017-12-07
 -------------------
 
 -- Part 1 creates the Top Thousand global table with all pertinent app_ids for either google_play or itunes_connect
@@ -25,21 +25,21 @@ select app_id, app_kind
 into #____midtt____
 from (
         select rank_table.app_country_iso, rank_table.app_id, rank_table.app_store_id, app_kind, 
-            ((max(days_in_quarter) - count(convert (int, app_rank))) * 541 + sum(convert(int, app_rank))) / max(days_in_quarter) as app_rank --Google Play
-            --((max(days_in_quarter) - count(convert (int, app_rank))) * 1501 + sum(convert (int, app_rank))) / max(days_in_quarter) as app_rank --iTunes
+            --((max(days_in_quarter) - count(convert (int, app_rank))) * 541 + sum(convert(int, app_rank))) / max(days_in_quarter) as app_rank --Google Play
+            ((max(days_in_quarter) - count(convert (int, app_rank))) * 1501 + sum(convert (int, app_rank))) / max(days_in_quarter) as app_rank --iTunes
         from dw_stage.apptopia.app_ranks as rank_table
         join (
                 select app_country_iso, count(distinct app_date) as days_in_quarter
                 from dw_stage.apptopia.app_ranks
                 where app_date >= '2017-07-01' and app_date < '2017-10-01' --dates delimiting a quarter
-                    and [app_store_id] in ('google_play')
-                    --and [app_store_id] in ('itunes_connect')
+                    --and [app_store_id] in ('google_play')
+                    and [app_store_id] in ('itunes_connect')
                     and app_category_id in ('38','6014')  
                     and app_kind in ('grossing', 'free') 
                     group by app_country_iso
         ) day_count on rank_table.app_country_iso = day_count.app_country_iso
-        where rank_table.app_store_id in ('google_play')  
-            --rank_table.app_store_id in ('itunes_connect')
+        where --rank_table.app_store_id in ('google_play')  
+            rank_table.app_store_id in ('itunes_connect')
             and app_category_id in ('38', '6014')
             and app_date >= '2017-07-01' and app_date < '2017-10-01'
             and app_kind in ('grossing', 'free')
@@ -84,7 +84,8 @@ from
     (
         select md.app_id, app_name, app_publisher_name, app_sdk_name,'1' as sdk_present, app_price_cents from dw_stage.apptopia.app_metadata md
         right join ##____top1k____ tt on md.app_id = tt.app_id
-        where app_store_id = 'google_play' --to avoid using CN Android stores
+        where /*app_store_id = 'google_play' --to avoid using CN Android stores
+		and*/ app_category_name = 'Games'
     ) as sourcetable2
 PIVOT(
     max(sdk_present) for app_sdk_name in (Unity, [Unreal Engine], Cocos2D, Marmalade, Corona, [Corona Labs], Xamarin)
@@ -99,5 +100,13 @@ select distinct a.app_id, a.app_kind, app_name, app_publisher_name, app_price_ce
     ,rank_BR, rank_CA, rank_CN, rank_DE, rank_FI, rank_FR, rank_GB, rank_JP, rank_KR, rank_MX, rank_RU, rank_SE, rank_US
     ,case when b.app_id is not NULL then 'found' else 'missing' end as missingSDK
     ,unity, unreal, cocos, marmalade, corona, corona_labs, xamarin
+	, rev_summation, iap_summation, download_revenues, downloads
+into ##____stephenp____
 from ##____top1k____ a
 left join ##____ainfo____ b on a.app_id = b.app_id
+left join (select app_id, sum(app_total_revenue) as rev_summation, sum(app_iap_revenue) as iap_summation, sum(app_download_revenue) as download_revenues, sum(app_downloads) as downloads
+from dw_stage.apptopia.app_estimates
+where app_country_iso in ('BR', 'CA', 'CN', 'DE', 'FI', 'FR', 'GB', 'JP', 'KR', 'MX', 'RU', 'SE', 'US')
+and app_date >= '2017-07-01'
+and app_date < '2017-10-01'
+group by app_id) rev on rev.app_id = a.app_id
